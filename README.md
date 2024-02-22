@@ -87,3 +87,10 @@ installing GTkWave
 ![gtkwave](https://github.com/shreya0345/VSD/assets/160561583/3cdcd47f-f931-4aec-842a-8e4e800bf091)
 
 </details>
+
+<details>
+   <summary> TASK 2 </summary>
+   
+   ![WhatsApp Image 2024-02-22 at 8 45 52 AM](https://github.com/shreya0345/VSD/assets/160561583/2a4928cd-46ec-4c75-973e-c93d21326c65)
+   
+</details>
