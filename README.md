@@ -90,8 +90,10 @@ installing GTkWave
 
 <details>
    <summary> TASK 2 </summary>
+ ### BLOCK DIAGRAM
    
    ![WhatsApp Image 2024-02-22 at 8 45 52 AM](https://github.com/shreya0345/VSD/assets/160561583/2a4928cd-46ec-4c75-973e-c93d21326c65)
+   
 ### Waveform
 
 ![WhatsApp Image 2024-02-22 at 9 53 38 AM](https://github.com/shreya0345/VSD/assets/160561583/6dc56fd8-c4c6-4605-854f-ae44d005bdaf)
