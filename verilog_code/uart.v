@@ -1,106 +1,77 @@
-// UART Main Code without top-level module
-module UART (
-    input wire clk,
-    input wire reset,
-    input wire rx,
-    output wire tx
+module uart_tx(
+    input clk,
+    input reset,
+    input start,
+    input [7:0] data,
+    output reg tx_busy,
+    output reg tx_done,
+    output reg tx
 );
 
-parameter BAUD_RATE = 9600; // Default baud rate
-
-// Internal registers
-reg [7:0] data_reg;
+reg [3:0] tx_state;
 reg [3:0] bit_count;
-reg tx_reg;
-reg rx_reg;
-reg [15:0] baud_counter;
+reg [12:0] baud_count;
+reg [7:0] tx_data_reg;
 
-// Constants for baud rate generation
-localparam CLK_FREQUENCY = 50000000; // Assuming 50MHz clock
-localparam BIT_PERIOD = CLK_FREQUENCY / BAUD_RATE;
-localparam HALF_BIT_PERIOD = BIT_PERIOD / 2;
+localparam IDLE = 4'b0000;
+localparam START_BIT = 4'b0001;
+localparam DATA_BITS = 4'b0010;
+localparam STOP_BIT = 4'b0011;
 
-// UART states
-parameter IDLE = 2'd0;
-parameter START_BIT = 2'd1;
-parameter DATA_BITS = 2'd2;
-parameter STOP_BIT = 2'd3;
-
-// UART state register
-reg [1:0] state;
-
-// Transmitting process
-always @(posedge clk) begin
+always @(posedge clk or posedge reset) begin
     if (reset) begin
-        tx_reg <= 1; // Start with high state
-    end else begin
-        case(state)
+        tx_busy <= 1'b0;
+        tx_done <= 1'b0;
+        tx_state <= IDLE;
+        bit_count <= 4'd0;
+        baud_count <= 13'd0;
+    end
+    else begin
+        case(tx_state)
             IDLE: begin
-                tx_reg <= 1;
-                if (!rx) begin
-                    state <= START_BIT;
-                    bit_count <= 0;
-                    baud_counter <= HALF_BIT_PERIOD;
+                tx <= 1'b1;
+                if (start) begin
+                    tx_busy <= 1'b1;
+                    tx_done <= 1'b0;
+                    tx_state <= START_BIT;
+                    tx_data_reg <= data;
+                    bit_count <= 4'd0;
+                    baud_count <= 13'd0;
                 end
             end
             
             START_BIT: begin
-                tx_reg <= 0;
-                baud_counter <= baud_counter - 1;
-                if (baud_counter == 0) begin
-                    state <= DATA_BITS;
-                    baud_counter <= BIT_PERIOD;
+                tx <= 1'b0;
+                if (baud_count == 13'd0) begin
+                    tx_state <= DATA_BITS;
                 end
             end
             
             DATA_BITS: begin
-                tx_reg <= data_reg[bit_count];
-                baud_counter <= baud_counter - 1;
-                if (baud_counter == 0) begin
+                tx <= tx_data_reg[bit_count];
+                if (baud_count == 13'd0) begin
                     bit_count <= bit_count + 1;
-                    if (bit_count == 7) begin
-                        state <= STOP_BIT;
+                    if (bit_count == 8'd7) begin
+                        tx_state <= STOP_BIT;
                     end
-                    baud_counter <= BIT_PERIOD;
+                    baud_count <= 13'd0;
                 end
             end
             
             STOP_BIT: begin
-                tx_reg <= 1;
-                baud_counter <= baud_counter - 1;
-                if (baud_counter == 0) begin
-                    state <= IDLE;
+                tx <= 1'b1;
+                if (baud_count == 13'd0) begin
+                    tx_busy <= 1'b0;
+                    tx_done <= 1'b1;
+                    tx_state <= IDLE;
+                    bit_count <= 4'd0;
                 end
             end
         endcase
-    end
-end
-
-// Receiving process
-always @(posedge clk) begin
-    if (reset) begin
-        rx_reg <= 1; // Start with high state
-    end else begin
-        rx_reg <= rx;
-        if (state == IDLE && !rx && tx_reg) begin
-            state <= START_BIT;
-            bit_count <= 0;
-            baud_counter <= HALF_BIT_PERIOD;
+        if (baud_count < 13'd16) begin
+            baud_count <= baud_count + 1;
         end
     end
 end
-
-// Data register assignment
-always @(posedge clk) begin
-    if (reset) begin
-        data_reg <= 8'h00;
-    end else begin
-        if (state == DATA_BITS && baud_counter == HALF_BIT_PERIOD) begin
-            data_reg <= {rx_reg, data_reg[7:1]};
-        end
-    end
-end
-
-assign tx = tx_reg;
 
 endmodule

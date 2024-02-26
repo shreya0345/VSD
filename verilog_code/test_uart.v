@@ -1,45 +1,37 @@
-// UART Testbench Code without top-level module
-`timescale 1ns / 1ps
+module uart_tb;
 
-module UART_tb;
+reg clk, reset, start;
+reg [7:0] data;
+wire tx_busy, tx_done, tx;
 
-// Inputs
-reg clk;
-reg reset;
-reg rx;
-
-// Outputs
-wire tx;
-
-// Instantiate the UART module
-UART UART_inst (
+uart_tx uut (
     .clk(clk),
     .reset(reset),
-    .rx(rx),
+    .start(start),
+    .data(data),
+    .tx_busy(tx_busy),
+    .tx_done(tx_done),
     .tx(tx)
 );
 
-// Clock generation
-always #5 clk = ~clk;
-
-// Initial stimulus
 initial begin
     clk = 0;
     reset = 1;
-    rx = 1;
+    start = 0;
+    data = 8'h00;
     
-    #20 reset = 0; // De-assert reset after 20 time units
+    #10 reset = 0;
     
-    // Test data
-    #100 rx = 0; // Simulate start bit
+    #10 start = 1;
+    data = 8'hFF;
+    #100 start = 0;
     
-    // Simulate receiving byte
-    repeat (8) begin
-        #10 rx = $random % 2;
-    end
-    
-    #100 rx = 1; // Simulate stop bit
-    #100 $stop; // End simulation
+    #100 $finish;
 end
 
+always #5 clk = ~clk;
+initial begin
+  $dumpfile("dumpfile.vcd");
+  $dumpvars;
+end
 endmodule
