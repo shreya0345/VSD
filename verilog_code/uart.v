@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 module uart_tx(
     input clk,
     input reset,
@@ -75,3 +76,6 @@ always @(posedge clk or posedge reset) begin
 end
 
 endmodule
+=======
+
+>>>>>>> 20c0676211a1893e1dca9228ba24c62f50112e47

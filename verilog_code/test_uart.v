@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 module uart_tb;
 
 reg clk, reset, start;
@@ -35,3 +36,6 @@ initial begin
   $dumpvars;
 end
 endmodule
+=======
+
+>>>>>>> 20c0676211a1893e1dca9228ba24c62f50112e47
