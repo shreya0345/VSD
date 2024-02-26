@@ -1,3 +1,38 @@
+module uart_tx_wrapper (
+    input clk,
+    input reset,
+    input start,
+    input [7:0] data,
+    output reg tx_busy,
+    output reg tx_done,
+    output reg tx
+);
+
+// Define top-level variables
+reg clk_internal;
+reg reset_internal;
+reg start_internal;
+
+// Instantiate uart_tx module
+uart_tx uut (
+    .clk(clk_internal),
+    .reset(reset_internal),
+    .start(start_internal),
+    .data(data),
+    .tx_busy(tx_busy),
+    .tx_done(tx_done),
+    .tx(tx)
+);
+
+// Assign top-level variables
+always @ (posedge clk) begin
+    clk_internal <= clk;
+    reset_internal <= reset;
+    start_internal <= start;
+end
+
+endmodule
+
 module uart_tx(
     input clk,
     input reset,

@@ -35,3 +35,24 @@ initial begin
   $dumpvars;
 end
 endmodule
+
+module uart_tx (
+    input wire clk,
+    input wire reset,
+    input wire start,
+    input wire [7:0] data,
+    output reg tx_busy,
+    output reg tx_done,
+    output reg tx
+);
+// Define your module internals here
+// You can use reset, clk, and start inside this module
+// Example:
+// always @(posedge clk or posedge reset) begin
+//     if (reset) begin
+//         // Reset behavior
+//     end else begin
+//         // Non-reset behavior
+//     end
+// end
+endmodule
