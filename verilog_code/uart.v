@@ -1,58 +1,77 @@
-`timescale 1ns / 1ps
-
-module uart_tx_tb;
-
-// Parameters
-parameter BAUD_RATE = 9600;
-parameter CLK_FREQ = 50000000;
-
-// Signals
-reg clk = 1'b0;
-reg rst = 1'b0;
-reg start_tx = 1'b0;
-reg [7:0] data_tx;
-wire tx_done;
-wire tx_out;
-
-// Instantiate UART TX module
-uart_tx uart_tx_inst(
-    .clk(clk),
-    .rst(rst),
-    .start_tx(start_tx),
-    .data_tx(data_tx),
-    .tx_done(tx_done),
-    .tx_out(tx_out)
+module uart_tx(
+    input clk,
+    input reset,
+    input start,
+    input [7:0] data,
+    output reg tx_busy,
+    output reg tx_done,
+    output reg tx
 );
 
-// Clock generation
-always #5 clk = ~clk;
+reg [3:0] tx_state;
+reg [3:0] bit_count;
+reg [12:0] baud_count;
+reg [7:0] tx_data_reg;
 
-// Test stimulus
-initial begin
-    // Reset
-    rst = 1'b1;
-    #20;
-    rst = 1'b0;
-    #20;
-    
-    // Test transmission
-    data_tx = 8'h55; // Data to transmit
-    start_tx = 1'b1; // Start transmission
-    #100;
-    start_tx = 1'b0;
-    #100;
+localparam IDLE = 4'b0000;
+localparam START_BIT = 4'b0001;
+localparam DATA_BITS = 4'b0010;
+localparam STOP_BIT = 4'b0011;
 
-    // Additional test cases can be added here
-    // ...
-
-    // End simulation
-    $stop;
-end
-
-// Dump VCD file
-initial begin
-    $dumpfile("uart_tx_tb.vcd");
-    $dumpvars(0, uart_tx_tb);
+always @(posedge clk or posedge reset) begin
+    if (reset) begin
+        tx_busy <= 1'b0;
+        tx_done <= 1'b0;
+        tx_state <= IDLE;
+        bit_count <= 4'd0;
+        baud_count <= 13'd0;
+    end
+    else begin
+        case(tx_state)
+            IDLE: begin
+                tx <= 1'b1;
+                if (start) begin
+                    tx_busy <= 1'b1;
+                    tx_done <= 1'b0;
+                    tx_state <= START_BIT;
+                    tx_data_reg <= data;
+                    bit_count <= 4'd0;
+                    baud_count <= 13'd0;
+                end
+            end
+            
+            START_BIT: begin
+                tx <= 1'b0;
+                if (baud_count == 13'd0) begin
+                    tx_state <= DATA_BITS;
+                end
+            end
+            
+            DATA_BITS: begin
+                tx <= tx_data_reg[bit_count];
+                if (baud_count == 13'd0) begin
+                    bit_count <= bit_count + 1;
+                    if (bit_count == 8'd7) begin
+                        tx_state <= STOP_BIT;
+                    end
+                    baud_count <= 13'd0;
+                end
+            end
+            
+            STOP_BIT: begin
+                tx <= 1'b1;
+                if (baud_count == 13'd0) begin
+                    tx_busy <= 1'b0;
+                    tx_done <= 1'b1;
+                    tx_state <= IDLE;
+                    bit_count <= 4'd0;
+                end
+            end
+        endcase
+        if (baud_count < 13'd16) begin
+            baud_count <= baud_count + 1;
+        end
+    end
 end
 
 endmodule
