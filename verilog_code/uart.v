@@ -25,7 +25,7 @@ uart_tx uart_tx_inst(
 );
 
 // Clock generation
-always #10 clk = ~clk;
+always #5 clk = ~clk;
 
 // Test stimulus
 initial begin
