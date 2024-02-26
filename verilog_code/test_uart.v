@@ -14,6 +14,11 @@ uart_tx uut (
     .tx(tx)
 );
 
+// Instantiate topLevel module
+topLevel top (
+    .Output(tx)  // Connect topLevel's Output port to tx
+);
+
 initial begin
     clk = 0;
     reset = 1;
@@ -30,8 +35,30 @@ initial begin
 end
 
 always #5 clk = ~clk;
+
 initial begin
   $dumpfile("dumpfile.vcd");
   $dumpvars;
 end
+
 endmodule
+
+module topLevel(output [1:0] Output);
+
+    wire[1:0] PC;
+
+    sum s1 (
+        .PC(PC)  // Connect sum's PC output to PC wire
+    );
+
+    assign Output = PC;
+
+endmodule
+
+
+module sum(output [1:0] PC);
+
+    assign PC = 2'b11;
+
+endmodule
+
