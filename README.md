@@ -101,3 +101,8 @@ installing GTkWave
 ![WhatsApp Image 2024-02-22 at 9 53 38 AM](https://github.com/shreya0345/VSD/assets/160561583/6dc56fd8-c4c6-4605-854f-ae44d005bdaf)
 
 </details>
+
+### The Third online meet was held on 22nd of Feb 2024 @6PM
+<details>
+   
+</details>
