@@ -1,112 +1,130 @@
-module uart_tx_wrapper (
-    input clk,
-    input reset,
-    input start,
-    input [7:0] data,
-    output reg tx_busy,
-    output reg tx_done,
-    output reg tx
-);
+module UART_TX 
+  #(parameter CLKS_PER_BIT = 217)
+  (
+   input       i_Rst_L,
+   input       i_Clock,
+   input       i_TX_DV,
+   input [7:0] i_TX_Byte, 
+   output reg  o_TX_Active,
+   output reg  o_TX_Serial,
+   output reg  o_TX_Done
+   );
+ 
+  localparam IDLE         = 2'b00;
+  localparam TX_START_BIT = 2'b01;
+  localparam TX_DATA_BITS = 2'b10;
+  localparam TX_STOP_BIT  = 2'b11;
+  
+  reg [2:0] r_SM_Main;
+  reg [$clog2(CLKS_PER_BIT):0] r_Clock_Count;
+  reg [2:0] r_Bit_Index;
+  reg [7:0] r_TX_Data;
 
-// Define top-level variables
-reg clk_internal;
-reg reset_internal;
-reg start_internal;
 
-// Instantiate uart_tx module
-uart_tx uut (
-    .clk(clk_internal),
-    .reset(reset_internal),
-    .start(start_internal),
-    .data(data),
-    .tx_busy(tx_busy),
-    .tx_done(tx_done),
-    .tx(tx)
-);
-
-// Assign top-level variables
-always @ (posedge clk) begin
-    clk_internal <= clk;
-    reset_internal <= reset;
-    start_internal <= start;
-end
-
-endmodule
-
-module uart_tx(
-    input clk,
-    input reset,
-    input start,
-    input [7:0] data,
-    output reg tx_busy,
-    output reg tx_done,
-    output reg tx
-);
-
-reg [3:0] tx_state;
-reg [3:0] bit_count;
-reg [12:0] baud_count;
-reg [7:0] tx_data_reg;
-
-localparam IDLE = 4'b0000;
-localparam START_BIT = 4'b0001;
-localparam DATA_BITS = 4'b0010;
-localparam STOP_BIT = 4'b0011;
-
-always @(posedge clk or posedge reset) begin
-    if (reset) begin
-        tx_busy <= 1'b0;
-        tx_done <= 1'b0;
-        tx_state <= IDLE;
-        bit_count <= 4'd0;
-        baud_count <= 13'd0;
+  // Purpose: Control TX state machine
+  always @(posedge i_Clock or negedge i_Rst_L)
+  begin
+    if (~i_Rst_L)
+    begin
+      r_SM_Main <= 3'b000;
     end
-    else begin
-        case(tx_state)
-            IDLE: begin
-                tx <= 1'b1;
-                if (start) begin
-                    tx_busy <= 1'b1;
-                    tx_done <= 1'b0;
-                    tx_state <= START_BIT;
-                    tx_data_reg <= data;
-                    bit_count <= 4'd0;
-                    baud_count <= 13'd0;
-                end
-            end
-            
-            START_BIT: begin
-                tx <= 1'b0;
-                if (baud_count == 13'd0) begin
-                    tx_state <= DATA_BITS;
-                end
-            end
-            
-            DATA_BITS: begin
-                tx <= tx_data_reg[bit_count];
-                if (baud_count == 13'd0) begin
-                    bit_count <= bit_count + 1;
-                    if (bit_count == 8'd7) begin
-                        tx_state <= STOP_BIT;
-                    end
-                    baud_count <= 13'd0;
-                end
-            end
-            
-            STOP_BIT: begin
-                tx <= 1'b1;
-                if (baud_count == 13'd0) begin
-                    tx_busy <= 1'b0;
-                    tx_done <= 1'b1;
-                    tx_state <= IDLE;
-                    bit_count <= 4'd0;
-                end
-            end
-        endcase
-        if (baud_count < 13'd16) begin
-            baud_count <= baud_count + 1;
-        end
-    end
-end
+    else
+    begin
 
+      o_TX_Done <= 1'b0;
+
+      case (r_SM_Main)
+      IDLE :
+        begin
+          o_TX_Serial   <= 1'b1;         // Drive Line High for Idle
+          r_Clock_Count <= 0;
+          r_Bit_Index   <= 0;
+          
+          if (i_TX_DV == 1'b1)
+          begin
+            o_TX_Active <= 1'b1;
+            r_TX_Data   <= i_TX_Byte;
+            r_SM_Main   <= TX_START_BIT;
+          end
+          else
+            r_SM_Main <= IDLE;
+        end // case: IDLE
+      
+      
+      // Send out Start Bit. Start bit = 0
+      TX_START_BIT :
+        begin
+          o_TX_Serial <= 1'b0;
+          
+          // Wait CLKS_PER_BIT-1 clock cycles for start bit to finish
+          if (r_Clock_Count < CLKS_PER_BIT-1)
+          begin
+            r_Clock_Count <= r_Clock_Count + 1;
+            r_SM_Main     <= TX_START_BIT;
+          end
+          else
+          begin
+            r_Clock_Count <= 0;
+            r_SM_Main     <= TX_DATA_BITS;
+          end
+        end // case: TX_START_BIT
+      
+      
+      // Wait CLKS_PER_BIT-1 clock cycles for data bits to finish         
+      TX_DATA_BITS :
+        begin
+          o_TX_Serial <= r_TX_Data[r_Bit_Index];
+          
+          if (r_Clock_Count < CLKS_PER_BIT-1)
+          begin
+            r_Clock_Count <= r_Clock_Count + 1;
+            r_SM_Main     <= TX_DATA_BITS;
+          end
+          else
+          begin
+            r_Clock_Count <= 0;
+            
+            // Check if we have sent out all bits
+            if (r_Bit_Index < 7)
+            begin
+              r_Bit_Index <= r_Bit_Index + 1;
+              r_SM_Main   <= TX_DATA_BITS;
+            end
+            else
+            begin
+              r_Bit_Index <= 0;
+              r_SM_Main   <= TX_STOP_BIT;
+            end
+          end 
+        end // case: TX_DATA_BITS
+      
+      
+      // Send out Stop bit.  Stop bit = 1
+      TX_STOP_BIT :
+        begin
+          o_TX_Serial <= 1'b1;
+          
+          // Wait CLKS_PER_BIT-1 clock cycles for Stop bit to finish
+          if (r_Clock_Count < CLKS_PER_BIT-1)
+          begin
+            r_Clock_Count <= r_Clock_Count + 1;
+            r_SM_Main     <= TX_STOP_BIT;
+          end
+          else
+          begin
+            o_TX_Done     <= 1'b1;
+            r_Clock_Count <= 0;
+            r_SM_Main     <= IDLE;
+            o_TX_Active   <= 1'b0;
+          end 
+        end // case: TX_STOP_BIT      
+      
+      default :
+        r_SM_Main <= IDLE;
+      
+    endcase
+    end // else: !if(~i_Rst_L)
+  end // always @ (posedge i_Clock or negedge i_Rst_L)
+
+  
 endmodule
