@@ -1,130 +1,87 @@
-module UART_TX 
-  #(parameter CLKS_PER_BIT = 217)
-  (
-   input       i_Rst_L,
-   input       i_Clock,
-   input       i_TX_DV,
-   input [7:0] i_TX_Byte, 
-   output reg  o_TX_Active,
-   output reg  o_TX_Serial,
-   output reg  o_TX_Done
-   );
- 
-  localparam IDLE         = 2'b00;
-  localparam TX_START_BIT = 2'b01;
-  localparam TX_DATA_BITS = 2'b10;
-  localparam TX_STOP_BIT  = 2'b11;
-  
-  reg [2:0] r_SM_Main;
-  reg [$clog2(CLKS_PER_BIT):0] r_Clock_Count;
-  reg [2:0] r_Bit_Index;
-  reg [7:0] r_TX_Data;
+module uart_transmitter (
+    input clk,          // System Clock
+    input rst_n,        // Reset (active low)
+    input start_tx,     // Start transmission
+    input [7:0] tx_data,// Data to transmit
+    output reg tx_busy, // Transmission busy flag
+    output reg tx_done, // Transmission done flag
+    output reg tx       // Transmitted data line
+);
 
+// UART parameters
+parameter BAUD_RATE = 9600;
+parameter CLK_FREQ = 50000000; // Assuming a 50MHz clock
 
-  // Purpose: Control TX state machine
-  always @(posedge i_Clock or negedge i_Rst_L)
-  begin
-    if (~i_Rst_L)
-    begin
-      r_SM_Main <= 3'b000;
+// Internal registers
+reg [3:0] count;
+reg [9:0] bit_count;
+reg [7:0] data_reg;
+
+// State machine states
+parameter IDLE = 2'b00;
+parameter START_BIT = 2'b01;
+parameter DATA_BITS = 2'b10;
+parameter STOP_BIT = 2'b11;
+
+// UART baud rate generator
+reg [15:0] baud_counter;
+always @(posedge clk or negedge rst_n) begin
+    if (~rst_n) begin
+        baud_counter <= 16'd0;
+    end else begin
+        if (baud_counter == (CLK_FREQ / (BAUD_RATE * 16)) - 1) begin
+            baud_counter <= 16'd0;
+        end else begin
+            baud_counter <= baud_counter + 1;
+        end
     end
-    else
-    begin
+end
 
-      o_TX_Done <= 1'b0;
-
-      case (r_SM_Main)
-      IDLE :
-        begin
-          o_TX_Serial   <= 1'b1;         // Drive Line High for Idle
-          r_Clock_Count <= 0;
-          r_Bit_Index   <= 0;
-          
-          if (i_TX_DV == 1'b1)
-          begin
-            o_TX_Active <= 1'b1;
-            r_TX_Data   <= i_TX_Byte;
-            r_SM_Main   <= TX_START_BIT;
-          end
-          else
-            r_SM_Main <= IDLE;
-        end // case: IDLE
-      
-      
-      // Send out Start Bit. Start bit = 0
-      TX_START_BIT :
-        begin
-          o_TX_Serial <= 1'b0;
-          
-          // Wait CLKS_PER_BIT-1 clock cycles for start bit to finish
-          if (r_Clock_Count < CLKS_PER_BIT-1)
-          begin
-            r_Clock_Count <= r_Clock_Count + 1;
-            r_SM_Main     <= TX_START_BIT;
-          end
-          else
-          begin
-            r_Clock_Count <= 0;
-            r_SM_Main     <= TX_DATA_BITS;
-          end
-        end // case: TX_START_BIT
-      
-      
-      // Wait CLKS_PER_BIT-1 clock cycles for data bits to finish         
-      TX_DATA_BITS :
-        begin
-          o_TX_Serial <= r_TX_Data[r_Bit_Index];
-          
-          if (r_Clock_Count < CLKS_PER_BIT-1)
-          begin
-            r_Clock_Count <= r_Clock_Count + 1;
-            r_SM_Main     <= TX_DATA_BITS;
-          end
-          else
-          begin
-            r_Clock_Count <= 0;
-            
-            // Check if we have sent out all bits
-            if (r_Bit_Index < 7)
-            begin
-              r_Bit_Index <= r_Bit_Index + 1;
-              r_SM_Main   <= TX_DATA_BITS;
+// State machine for UART transmission
+always @(posedge clk or negedge rst_n) begin
+    if (~rst_n) begin
+        count <= IDLE;
+        tx <= 1'b1;
+        tx_busy <= 1'b0;
+        tx_done <= 1'b0;
+    end else begin
+        case (count)
+            IDLE: begin
+                if (start_tx) begin
+                    count <= START_BIT;
+                    data_reg <= tx_data;
+                end
             end
-            else
-            begin
-              r_Bit_Index <= 0;
-              r_SM_Main   <= TX_STOP_BIT;
+            START_BIT: begin
+                if (baud_counter == (CLK_FREQ / (BAUD_RATE * 16)) - 1) begin
+                    count <= DATA_BITS;
+                    bit_count <= 10'd0;
+                    tx <= 1'b0; // Start bit
+                end
             end
-          end 
-        end // case: TX_DATA_BITS
-      
-      
-      // Send out Stop bit.  Stop bit = 1
-      TX_STOP_BIT :
-        begin
-          o_TX_Serial <= 1'b1;
-          
-          // Wait CLKS_PER_BIT-1 clock cycles for Stop bit to finish
-          if (r_Clock_Count < CLKS_PER_BIT-1)
-          begin
-            r_Clock_Count <= r_Clock_Count + 1;
-            r_SM_Main     <= TX_STOP_BIT;
-          end
-          else
-          begin
-            o_TX_Done     <= 1'b1;
-            r_Clock_Count <= 0;
-            r_SM_Main     <= IDLE;
-            o_TX_Active   <= 1'b0;
-          end 
-        end // case: TX_STOP_BIT      
-      
-      default :
-        r_SM_Main <= IDLE;
-      
-    endcase
-    end // else: !if(~i_Rst_L)
-  end // always @ (posedge i_Clock or negedge i_Rst_L)
+            DATA_BITS: begin
+                if (baud_counter == (CLK_FREQ / (BAUD_RATE * 16)) - 1) begin
+                    if (bit_count < 8) begin
+                        tx <= data_reg[bit_count];
+                        bit_count <= bit_count + 1;
+                    end else begin
+                        count <= STOP_BIT;
+                    end
+                end
+            end
+            STOP_BIT: begin
+                if (baud_counter == (CLK_FREQ / (BAUD_RATE * 16)) - 1) begin
+                    tx <= 1'b1; // Stop bit
+                    tx_done <= 1'b1;
+                    tx_busy <= 1'b0;
+                    count <= IDLE;
+                end
+            end
+            default: begin
+                count <= IDLE;
+            end
+        endcase
+    end
+end
 
-  
 endmodule

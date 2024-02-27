@@ -1,70 +1,54 @@
-`timescale 1ns/10ps
+`timescale 1ns/1ns
 
-`include "UART_TX.v"
+module uart_transmitter_tb;
 
-module UART_TB ();
+// Parameters
+parameter CLK_PERIOD = 10;
 
-  // Testbench uses a 25 MHz clock
-  // Want to interface to 115200 baud UART
-  // 25000000 / 115200 = 217 Clocks Per Bit.
-  parameter c_CLOCK_PERIOD_NS = 40;
-  parameter c_CLKS_PER_BIT    = 217;
-  parameter c_BIT_PERIOD      = 8600;
-  
-  reg r_Clock = 0;
-  reg r_TX_DV = 0;
-  wire w_TX_Active, w_UART_Line;
-  wire w_TX_Serial;
-  reg [7:0] r_TX_Byte = 0;
-  wire [7:0] w_RX_Byte;
+// Signals
+reg clk;
+reg rst_n;
+reg start_tx;
+reg [7:0] tx_data;
+wire tx_busy;
+wire tx_done;
+reg tx;
 
-  UART_RX #(.CLKS_PER_BIT(c_CLKS_PER_BIT)) UART_RX_Inst
-    (.i_Clock(r_Clock),
-     .i_RX_Serial(w_UART_Line),
-     .o_RX_DV(w_RX_DV),
-     .o_RX_Byte(w_RX_Byte)
-     );
-  
-  UART_TX #(.CLKS_PER_BIT(c_CLKS_PER_BIT)) UART_TX_Inst
-    (.i_Clock(r_Clock),
-     .i_TX_DV(r_TX_DV),
-     .i_TX_Byte(r_TX_Byte),
-     .o_TX_Active(w_TX_Active),
-     .o_TX_Serial(w_TX_Serial),
-     .o_TX_Done()
-     );
+// Instantiate DUT
+uart_transmitter dut (
+    .clk(clk),
+    .rst_n(rst_n),
+    .start_tx(start_tx),
+    .tx_data(tx_data),
+    .tx_busy(tx_busy),
+    .tx_done(tx_done),
+    .tx(tx)
+);
 
-  // Keeps the UART Receive input high (default) when
-  // UART transmitter is not active
-  assign w_UART_Line = w_TX_Active ? w_TX_Serial : 1'b1;
-    
-  always
-    #(c_CLOCK_PERIOD_NS/2) r_Clock <= !r_Clock;
-  
-  // Main Testing:
-  initial
-    begin
-      // Tell UART to send a command (exercise TX)
-      @(posedge r_Clock);
-      @(posedge r_Clock);
-      r_TX_DV   <= 1'b1;
-      r_TX_Byte <= 8'h3F;
-      @(posedge r_Clock);
-      r_TX_DV <= 1'b0;
+// Clock generation
+always #(CLK_PERIOD/2) clk = ~clk;
 
-      // Check that the correct command was received
-      @(posedge w_RX_DV);
-      if (w_RX_Byte == 8'h3F)
-        $display("Test Passed - Correct Byte Received");
-      else
-        $display("Test Failed - Incorrect Byte Received");
-      $finish();
+// Initial stimulus
+initial begin
+    clk = 0;
+    rst_n = 0;
+    start_tx = 0;
+    tx_data = 8'b0;
+    #100 rst_n = 1;
+    #100 start_tx = 1;
+    #100 start_tx = 0;
+    #100;
+    $finish;
+end
+
+// Monitor
+always @(posedge clk) begin
+    if (tx_busy) begin
+        $display("Transmitting: %b", tx);
     end
-  
-  initial 
-  begin
-    // Required to dump signals to EPWave
-    $dumpfile("dump.vcd");
-    $dumpvars(0);
-  end
+    if (tx_done) begin
+        $display("Transmission Complete");
+    end
+end
+
 endmodule
