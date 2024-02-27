@@ -102,8 +102,20 @@ installing GTkWave
 
 </details>
 
+
 ### The Third online meet was held on 22nd of Feb 2024 @6PM
+
 <details>
    <summary> Task 3 </summary>
+   
+![WhatsApp Image 2024-02-27 at 1 28 53 PM ](https://github.com/shreya0345/VSD/assets/160561583/b16dab4d-e6be-44af-baaa-2860399fb538)
+
+![WhatsApp Image 2024-02-27 at 1 29 11 PM ](https://github.com/shreya0345/VSD/assets/160561583/01996acc-d5c8-46a0-98e4-e494277f6ddb)
+
+![WhatsApp Image 2024-02-27 at 1 29 23 PM ](https://github.com/shreya0345/VSD/assets/160561583/26ae9f7a-63d0-4434-bb29-1253de524dbb)
+
+![WhatsApp Image 2024-02-27 at 1 29 30 PM ](https://github.com/shreya0345/VSD/assets/160561583/bb352469-16a0-4fda-bd90-4dc523c2fee7)
+
+![WhatsApp Image 2024-02-27 at 1 33 04 PM](https://github.com/shreya0345/VSD/assets/160561583/091d3196-7a6f-4a2c-a251-d117b8e071cd)
 
 </details>
