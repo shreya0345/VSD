@@ -119,3 +119,34 @@ installing GTkWave
 ![WhatsApp Image 2024-02-27 at 1 33 04 PM](https://github.com/shreya0345/VSD/assets/160561583/091d3196-7a6f-4a2c-a251-d117b8e071cd)
 
 </details>
+
+### The Fourth online meet was held on 27th of Feb 2024 @6PM
+
+<details>
+   <summary> Task 4 </summary>
+   
+![Screenshot from 2024-02-29 12-13-06](https://github.com/shreya0345/VSD/assets/160561583/f6d7d0dc-42b2-44b9-a001-dac9735ce472)
+
+![Screenshot from 2024-02-29 12-13-47](https://github.com/shreya0345/VSD/assets/160561583/a6502342-4534-46bd-969a-8fd0bcf0cecb)
+
+![Screenshot from 2024-02-29 12-14-30](https://github.com/shreya0345/VSD/assets/160561583/a3f2400c-fa19-4779-9bcb-9a50034ea667)
+
+![Screenshot from 2024-02-29 12-14-41](https://github.com/shreya0345/VSD/assets/160561583/a6137641-57b2-4bf5-966c-39611438f522)
+
+![Screenshot from 2024-02-29 12-15-06](https://github.com/shreya0345/VSD/assets/160561583/9eb7c38d-6c07-4ec3-bd72-911ef333ffe6)
+
+![Screenshot from 2024-02-29 12-07-03](https://github.com/shreya0345/VSD/assets/160561583/3cfb3a7a-e5cb-456c-a1ad-186517180efe)
+
+![Screenshot from 2024-02-29 12-08-21](https://github.com/shreya0345/VSD/assets/160561583/3a2302c3-0768-4808-b34c-444cd97247bc)
+
+![Screenshot from 2024-02-29 12-08-32](https://github.com/shreya0345/VSD/assets/160561583/b1a144e1-de8d-46a6-8684-38d6b3963675)
+
+![Screenshot from 2024-02-29 12-08-53](https://github.com/shreya0345/VSD/assets/160561583/de5fb40f-4af1-49ce-8e8a-9c47e68277ef)
+
+![Screenshot from 2024-02-29 12-11-02](https://github.com/shreya0345/VSD/assets/160561583/d02acdcf-4128-4fd8-b3d2-3316345e10b9)
+
+![Screenshot from 2024-02-29 12-11-10](https://github.com/shreya0345/VSD/assets/160561583/ace34c9a-3ceb-4fb4-a2b3-3c3c2cc51ecd)
+
+![Screenshot from 2024-02-29 12-11-34](https://github.com/shreya0345/VSD/assets/160561583/e2c7394e-f711-4cec-8b3c-46c9845670db)
+
+</details>
