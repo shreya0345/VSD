@@ -1,4 +1,4 @@
-![WhatsApp Image 2024-03-05 at 5 07 30 PM (1)](https://github.com/shreya0345/VSD/assets/160561583/18c5bb50-0042-494e-a218-dcd1e3a8b2c1)![WhatsApp Image 2024-03-05 at 5 07 30 PM](https://github.com/shreya0345/VSD/assets/160561583/e62fbe51-0fe5-4648-b6a0-a418ca8307fd)# A 4-week Research Internship on VSDSquadron Mini RISC-V Dev Board
+# A 4-week Research Internship on VSDSquadron Mini RISC-V Dev Board
 
 BOARD SPECIFICATIONS:
 
