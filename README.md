@@ -146,8 +146,7 @@ installing GTkWave
 ![Screenshot from 2024-02-29 12-11-02](https://github.com/shreya0345/VSD/assets/160561583/d02acdcf-4128-4fd8-b3d2-3316345e10b9)
 
 ![Screenshot from 2024-02-29 12-11-10](https://github.com/shreya0345/VSD/assets/160561583/ace34c9a-3ceb-4fb4-a2b3-3c3c2cc51ecd)
-
-![WhatsApp Image 2024-03-05 at 4 33 15 PM (1)](https://github.com/shreya0345/VSD/assets/160561583/1b181d30-a8e4-4ec5-a2b4-eb31
+![WhatsApp Image 2024-03-05 at 4 33 15 PM (1)](https://github.com/shreya0345/VSD/assets/160561583/c7e53d08-6fd6-4f01-9725-0fa223e0eac3)
 
 ![WhatsApp Image 2024-03-05 at 4 33 15 PM](https://github.com/shreya0345/VSD/assets/160561583/79f028af-b0c5-42fe-8021-6824809686e1)
 5abfe29a)
