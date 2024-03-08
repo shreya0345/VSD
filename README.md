@@ -155,7 +155,7 @@ installing GTkWave
 
 </details>
 
-### The Fiveth online meet was held on 1st of March 2024 @6PM
+### The Fifth online meet was held on 1st of March 2024 @6PM
 
 
 <details>
